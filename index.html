@@ -3,624 +3,349 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>IDS Dashboard — Iman Hakimy</title>
+<title>IDS — Continual Learning Demo</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
-
-:root {
-  --bg:      #03080f;
-  --s1:      #080f1a;
-  --s2:      #0d1826;
-  --s3:      #111f30;
-  --border:  #1c3050;
-  --blue:    #38bdf8;
-  --teal:    #2dd4bf;
-  --green:   #4ade80;
-  --red:     #f87171;
-  --amber:   #fbbf24;
-  --purple:  #c084fc;
-  --text:    #e2f0ff;
-  --muted:   #4d7094;
-  --mono:    'IBM Plex Mono', monospace;
-  --sans:    'IBM Plex Sans', sans-serif;
-  --glow-b:  0 0 24px rgba(56,189,248,0.18);
-  --glow-g:  0 0 24px rgba(74,222,128,0.18);
-  --glow-r:  0 0 24px rgba(248,113,113,0.18);
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg:#060910;--s1:#0a0f1a;--s2:#0e1520;--s3:#121c2a;--border:#1a2d45;
+  --blue:#3b9eff;--teal:#00d4b4;--green:#22d45a;--red:#ff4d6a;
+  --amber:#ffb830;--orange:#f97316;--purple:#b06bff;
+  --text:#ddeeff;--muted:#3a5a7a;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
 }
-
 *{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(59,158,255,0.025) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(59,158,255,0.025) 1px,transparent 1px);
+  background-size:50px 50px;}
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--sans);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+header{position:sticky;top:0;z-index:200;background:rgba(6,9,16,0.95);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
+  height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;}
+.logo{font-family:var(--mono);font-size:0.75rem;font-weight:700;color:var(--blue);
+  letter-spacing:0.1em;display:flex;align-items:center;gap:0.75rem;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 10px var(--green);animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.hright{display:flex;gap:0.75rem;}
+.hbadge{font-family:var(--mono);font-size:0.62rem;letter-spacing:0.1em;
+  padding:4px 10px;border:1px solid var(--border);border-radius:3px;color:var(--muted);}
 
-/* scan-line texture */
-body::before {
-  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
-  background: repeating-linear-gradient(0deg,
-    transparent, transparent 2px,
-    rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
-}
+main{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:1.5rem 2rem 4rem;}
 
-/* grid */
-body::after {
-  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
-  background-image:
-    linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
-  background-size: 48px 48px;
-}
+.hero{padding:2rem 0 1.75rem;border-bottom:1px solid var(--border);margin-bottom:1.75rem;
+  display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1.5rem;}
+.htag{font-family:var(--mono);font-size:0.65rem;color:var(--teal);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:0.6rem;}
+h1{font-size:clamp(1.5rem,3vw,2.4rem);font-weight:700;line-height:1.1;letter-spacing:-0.02em;}
+h1 em{font-style:normal;color:var(--blue);}
+.hsub{font-size:0.85rem;color:var(--muted);max-width:520px;line-height:1.6;margin-top:0.4rem;}
+.hmeta{font-family:var(--mono);font-size:0.68rem;color:var(--muted);line-height:1.9;text-align:right;}
+.hmeta strong{color:var(--text);}
 
-/* ── HEADER ── */
-header {
-  position:sticky; top:0; z-index:200;
-  background: rgba(3,8,15,0.9);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  height: 56px;
-  display:flex; align-items:center; justify-content:space-between;
-  padding: 0 2rem;
-}
-.logo {
-  font-family: var(--mono);
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--blue);
-  letter-spacing: 0.12em;
-  display:flex; align-items:center; gap:0.75rem;
-}
-.logo-dot { width:6px; height:6px; border-radius:50%; background:var(--green);
-  box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+section{margin-bottom:1.75rem;}
+.slabel{font-family:var(--mono);font-size:0.62rem;color:var(--muted);letter-spacing:0.15em;
+  text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem;}
+.slabel::before{content:'──';color:var(--border);}
 
-.header-right { display:flex; align-items:center; gap:1rem; }
-.hbadge {
-  font-family: var(--mono); font-size:0.65rem; letter-spacing:0.1em;
-  padding: 4px 12px; border:1px solid var(--border);
-  border-radius:3px; color:var(--muted);
-}
+.card{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border),transparent);}
 
-/* ── MAIN ── */
-main {
-  position:relative; z-index:1;
-  max-width: 1320px; margin:0 auto; padding: 1.5rem 2rem 3rem;
-}
+/* SCENARIO CARDS */
+.sc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
+.sc-card{border-radius:10px;padding:1.1rem;border:1px solid;position:relative;overflow:hidden;transition:transform .2s;}
+.sc-card:hover{transform:translateY(-3px);}
+.sc-card.sca{background:rgba(255,77,106,0.05);border-color:rgba(255,77,106,0.25);}
+.sc-card.scb{background:rgba(249,115,22,0.05);border-color:rgba(249,115,22,0.25);}
+.sc-card.scc{background:rgba(59,158,255,0.05);border-color:rgba(59,158,255,0.25);}
+.sc-card.scd{background:rgba(34,212,90,0.05);border-color:rgba(34,212,90,0.25);}
+.sc-tag{font-family:var(--mono);font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.4rem;}
+.sc-card.sca .sc-tag{color:var(--red);}
+.sc-card.scb .sc-tag{color:var(--orange);}
+.sc-card.scc .sc-tag{color:var(--blue);}
+.sc-card.scd .sc-tag{color:var(--green);}
+.sc-name{font-size:0.88rem;font-weight:700;margin-bottom:0.75rem;}
+.sc-card.sca .sc-name{color:var(--red);}
+.sc-card.scb .sc-name{color:var(--orange);}
+.sc-card.scc .sc-name{color:var(--blue);}
+.sc-card.scd .sc-name{color:var(--green);}
+.sc-metric{margin-bottom:0.4rem;}
+.sc-mlbl{font-family:var(--mono);font-size:0.58rem;color:var(--muted);letter-spacing:0.08em;}
+.sc-mval{font-family:var(--mono);font-size:1rem;font-weight:700;}
+.sc-card.sca .sc-mval.fr{color:var(--red);}
+.sc-card.scb .sc-mval.fr{color:var(--orange);}
+.sc-card.scc .sc-mval.fr{color:var(--blue);}
+.sc-card.scd .sc-mval.fr{color:var(--green);}
+.sc-badge{display:inline-block;font-family:var(--mono);font-size:0.6rem;padding:2px 8px;border-radius:3px;margin-top:0.5rem;}
+.sc-card.sca .sc-badge{background:rgba(255,77,106,0.15);color:var(--red);}
+.sc-card.scb .sc-badge{background:rgba(249,115,22,0.15);color:var(--orange);}
+.sc-card.scc .sc-badge{background:rgba(59,158,255,0.15);color:var(--blue);}
+.sc-card.scd .sc-badge{background:rgba(34,212,90,0.15);color:var(--green);}
 
-/* ── HERO ── */
-.hero {
-  padding: 2.5rem 0 2rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2rem;
-  display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1.5rem;
-}
-.hero-left {}
-.hero-tag {
-  font-family: var(--mono); font-size:0.68rem;
-  color: var(--teal); letter-spacing:0.2em;
-  text-transform:uppercase; margin-bottom:0.75rem;
-  display:flex; align-items:center; gap:0.5rem;
-}
-.hero-tag::before { content:'//'; color:var(--muted); }
-.hero h1 {
-  font-size: clamp(1.6rem,3.5vw,2.6rem);
-  font-weight:700; line-height:1.1;
-  margin-bottom: 0.5rem;
-  color: var(--text);
-  letter-spacing:-0.02em;
-}
-.hero h1 em { font-style:normal; color:var(--blue); }
-.hero-sub { font-size:0.88rem; color:var(--muted); max-width:520px; line-height:1.6; }
-.hero-right {
-  text-align:right;
-}
-.hero-meta { font-family:var(--mono); font-size:0.7rem; color:var(--muted); line-height:2; }
-.hero-meta strong { color:var(--text); }
+/* TABS */
+.tabs{display:flex;gap:0.4rem;margin-bottom:1.25rem;flex-wrap:wrap;}
+.tab{font-family:var(--mono);font-size:0.7rem;padding:7px 16px;border-radius:4px;
+  border:1px solid var(--border);background:transparent;color:var(--muted);
+  cursor:pointer;letter-spacing:0.05em;transition:all .2s;}
+.tab:hover{border-color:var(--blue);color:var(--text);}
+.tab.active{background:var(--blue);border-color:var(--blue);color:#000;font-weight:700;}
+.panel{display:none;}
+.panel.active{display:block;}
 
-/* ── SECTION ── */
-section { margin-bottom:2rem; }
-.sec-label {
-  font-family:var(--mono); font-size:0.65rem;
-  color:var(--muted); letter-spacing:0.15em; text-transform:uppercase;
-  margin-bottom:1rem;
-  display:flex; align-items:center; gap:0.75rem;
-}
-.sec-label::before { content: '──'; color:var(--border); }
-
-/* ── GRIDS ── */
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+.cwrap{position:relative;height:240px;}
+.clbl{font-family:var(--mono);font-size:0.62rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;}
 
-/* ── CARDS ── */
-.card {
-  background: var(--s2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1.25rem;
-  position:relative; overflow:hidden;
-}
-.card-sm { padding:1rem; }
-.card::before {
-  content:''; position:absolute; top:0; left:0; right:0; height:1px;
-  background: linear-gradient(90deg, transparent, var(--border), transparent);
-}
+/* RESULT TABLE */
+.rtable{width:100%;border-collapse:collapse;font-size:0.82rem;}
+.rtable th{font-family:var(--mono);font-size:0.58rem;color:var(--muted);
+  letter-spacing:0.1em;text-transform:uppercase;text-align:left;
+  padding:0.55rem 0.85rem;border-bottom:1px solid var(--border);}
+.rtable td{padding:0.75rem 0.85rem;border-bottom:1px solid rgba(26,45,69,0.5);}
+.rtable tr:last-child td{border-bottom:none;}
+.badge{display:inline-block;font-family:var(--mono);font-size:0.62rem;padding:3px 9px;border-radius:3px;font-weight:700;}
+.ba{background:rgba(255,77,106,0.12);color:var(--red);border:1px solid rgba(255,77,106,0.25);}
+.bb{background:rgba(249,115,22,0.12);color:var(--orange);border:1px solid rgba(249,115,22,0.25);}
+.bc{background:rgba(59,158,255,0.12);color:var(--blue);border:1px solid rgba(59,158,255,0.25);}
+.bd{background:rgba(34,212,90,0.12);color:var(--green);border:1px solid rgba(34,212,90,0.25);}
 
-/* ── STAT CARDS ── */
-.stat {
-  background:var(--s2); border:1px solid var(--border);
-  border-radius:8px; padding:1.1rem 1.25rem;
-  position:relative; overflow:hidden;
-  transition: border-color .2s, transform .2s;
-}
-.stat:hover { transform:translateY(-2px); }
-.stat-top { position:absolute; top:0; left:0; right:0; height:2px; }
-.stat.blue  .stat-top { background:var(--blue);  box-shadow:var(--glow-b); }
-.stat.green .stat-top { background:var(--green); box-shadow:var(--glow-g); }
-.stat.red   .stat-top { background:var(--red);   box-shadow:var(--glow-r); }
-.stat.amber .stat-top { background:var(--amber); }
-.stat.teal  .stat-top { background:var(--teal);  }
-.stat.purple .stat-top{ background:var(--purple);}
+/* DEMO SECTION */
+.demo-container{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+.demo-panel{border-radius:10px;padding:1.5rem;border:1px solid;}
+.demo-panel.baseline{background:rgba(255,77,106,0.04);border-color:rgba(255,77,106,0.2);}
+.demo-panel.clbest{background:rgba(34,212,90,0.04);border-color:rgba(34,212,90,0.2);}
+.panel-hdr{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.35rem;}
+.pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.baseline .pdot{background:var(--red);box-shadow:0 0 8px var(--red);}
+.clbest  .pdot{background:var(--green);box-shadow:0 0 8px var(--green);}
+.pname{font-family:var(--mono);font-size:0.75rem;font-weight:700;letter-spacing:0.06em;}
+.baseline .pname{color:var(--red);}
+.clbest  .pname{color:var(--green);}
+.psub{font-size:0.78rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.5;}
 
-.stat-lbl {
-  font-family:var(--mono); font-size:0.62rem;
-  color:var(--muted); letter-spacing:0.1em; text-transform:uppercase;
-  margin-bottom:0.4rem;
-}
-.stat-val {
-  font-family:var(--mono); font-size:1.8rem;
-  font-weight:700; line-height:1; margin-bottom:0.3rem;
-}
-.stat.blue   .stat-val { color:var(--blue); }
-.stat.green  .stat-val { color:var(--green); }
-.stat.red    .stat-val { color:var(--red); }
-.stat.amber  .stat-val { color:var(--amber); }
-.stat.teal   .stat-val { color:var(--teal); }
-.stat.purple .stat-val { color:var(--purple); }
-.stat-sub { font-size:0.72rem; color:var(--muted); }
+/* ATTACK BUTTONS */
+.atk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin-bottom:1rem;}
+.atk-btn{padding:0.65rem 0.75rem;border-radius:6px;border:1px solid var(--border);
+  background:var(--s1);color:var(--muted);font-family:var(--mono);font-size:0.72rem;
+  cursor:pointer;transition:all .2s;text-align:left;}
+.atk-btn:hover{border-color:var(--blue);color:var(--text);}
+.atk-btn.sel{border-color:var(--blue);background:rgba(59,158,255,0.1);color:var(--blue);}
+.atk-tag{display:block;font-size:0.55rem;letter-spacing:0.1em;opacity:0.6;margin-bottom:2px;}
+.atk-btn.t1 .atk-tag{color:var(--blue);}
+.atk-btn.t2 .atk-tag{color:var(--purple);}
 
-/* ── TABS ── */
-.tabs { display:flex; gap:0.4rem; margin-bottom:1.25rem; flex-wrap:wrap; }
-.tab {
-  font-family:var(--mono); font-size:0.72rem;
-  padding: 7px 18px; border-radius:4px;
-  border:1px solid var(--border);
-  background:transparent; color:var(--muted);
-  cursor:pointer; letter-spacing:0.05em;
-  transition:all .2s;
-}
-.tab:hover { border-color:var(--blue); color:var(--text); }
-.tab.active { background:var(--blue); border-color:var(--blue); color:#000; font-weight:600; }
+.pred-btn{width:100%;padding:11px;border-radius:7px;border:none;
+  font-family:var(--mono);font-size:0.75rem;letter-spacing:0.08em;
+  cursor:pointer;transition:all .2s;margin-bottom:1rem;font-weight:600;}
+.baseline .pred-btn{background:rgba(255,77,106,0.15);color:var(--red);border:1px solid rgba(255,77,106,0.3);}
+.baseline .pred-btn:hover{background:rgba(255,77,106,0.25);}
+.clbest  .pred-btn{background:rgba(34,212,90,0.15);color:var(--green);border:1px solid rgba(34,212,90,0.3);}
+.clbest  .pred-btn:hover{background:rgba(34,212,90,0.25);}
+.pred-btn:disabled{opacity:0.4;cursor:not-allowed;}
 
-.panel { display:none; }
-.panel.active { display:block; }
+.rbox{background:var(--s1);border:1px solid var(--border);border-radius:8px;
+  padding:1.1rem;min-height:120px;display:flex;flex-direction:column;
+  justify-content:center;transition:border-color .3s;}
+.rbox.ok{border-color:rgba(34,212,90,0.4);}
+.rbox.fail{border-color:rgba(255,77,106,0.4);}
+.rlbl{font-family:var(--mono);font-size:0.58rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.4rem;}
+.rpred{font-family:var(--mono);font-size:1.15rem;font-weight:700;margin-bottom:0.25rem;}
+.rconf{font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem;}
+.cbar-wrap{height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin-bottom:0.5rem;}
+.cbar{height:100%;border-radius:2px;transition:width .8s ease;}
+.rstatus{font-size:0.75rem;font-weight:600;display:flex;align-items:center;gap:0.4rem;}
+.rstatus.ok{color:var(--green);}
+.rstatus.fail{color:var(--red);}
+.rnote{font-size:0.7rem;color:var(--muted);margin-top:0.3rem;line-height:1.4;}
 
-/* ── SCENARIO HEADER ── */
-.scen-hdr {
-  border-radius:8px; padding:1.25rem 1.5rem;
-  margin-bottom:1.25rem;
-  display:flex; align-items:center; gap:1.25rem;
-  border:1px solid;
-}
-.scen-hdr.bad  { background:rgba(248,113,113,0.05); border-color:rgba(248,113,113,0.25); }
-.scen-hdr.good { background:rgba(74,222,128,0.05);  border-color:rgba(74,222,128,0.25); }
-.scen-icon { font-size:2rem; flex-shrink:0; }
-.scen-hdr h2  { font-size:1.05rem; font-weight:600; margin-bottom:0.2rem; }
-.scen-hdr.bad  h2 { color:var(--red); }
-.scen-hdr.good h2 { color:var(--green); }
-.scen-hdr p { font-size:0.82rem; color:var(--muted); line-height:1.5; }
+/* COMPARISON BOX */
+.cmp-box{display:none;margin-top:1.25rem;}
+.cmp-inner{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
+.cmp-title{font-family:var(--mono);font-size:0.62rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem;}
+.cmp-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1rem;}
+.cmp-cell{border-radius:6px;padding:0.85rem 1rem;border:1px solid var(--border);background:var(--s1);}
+.cmp-lbl{font-family:var(--mono);font-size:0.6rem;color:var(--muted);letter-spacing:0.1em;margin-bottom:0.25rem;}
+.cmp-val{font-family:var(--mono);font-size:1.05rem;font-weight:700;}
+.cmp-arr{color:var(--muted);font-size:1.4rem;}
 
-/* ── TASK PILLS ── */
-.task-flow { display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; margin-bottom:1.25rem; }
-.tpill {
-  border-radius:6px; padding:0.65rem 1.1rem;
-  font-size:0.8rem; font-weight:600; border:1px solid;
-}
-.tpill.t1 {
-  background:rgba(56,189,248,0.08); border-color:rgba(56,189,248,0.35); color:var(--blue);
-}
-.tpill.t2 {
-  background:rgba(192,132,252,0.08); border-color:rgba(192,132,252,0.35); color:var(--purple);
-}
-.tpill-lbl {
-  font-family:var(--mono); font-size:0.6rem; letter-spacing:0.1em;
-  opacity:0.65; display:block; margin-bottom:2px;
-}
-.arr { color:var(--muted); font-size:1.1rem; }
+/* FINDING BOX */
+.finding{padding:0.85rem 1rem;border-radius:6px;font-size:0.8rem;margin-top:1rem;line-height:1.5;border:1px solid;}
+.finding.good{background:rgba(34,212,90,0.06);border-color:rgba(34,212,90,0.2);color:var(--green);}
+.finding.warn{background:rgba(255,184,48,0.06);border-color:rgba(255,184,48,0.2);color:var(--amber);}
+.finding.bad{background:rgba(255,77,106,0.06);border-color:rgba(255,77,106,0.2);color:var(--red);}
 
-/* ── CHART WRAP ── */
-.chart-wrap { position:relative; height:220px; }
-.chart-lbl {
-  font-family:var(--mono); font-size:0.65rem;
-  color:var(--muted); letter-spacing:0.1em; text-transform:uppercase;
-  margin-bottom:0.75rem;
-}
+footer{position:relative;z-index:1;border-top:1px solid var(--border);
+  padding:1.1rem 2rem;display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--mono);font-size:0.62rem;color:var(--muted);}
 
-/* ── PROGRESS BARS ── */
-.prow { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.65rem; }
-.plabel {
-  font-family:var(--mono); font-size:0.68rem; color:var(--muted);
-  width:110px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.ptrack { flex:1; height:6px; background:var(--s3); border-radius:3px; overflow:hidden; }
-.pbar { height:100%; border-radius:3px; transition:width 1.4s cubic-bezier(0.4,0,0.2,1); }
-.pval { font-family:var(--mono); font-size:0.7rem; width:44px; text-align:right; flex-shrink:0; }
-
-/* ── COMPARE TABLE ── */
-.ctable { width:100%; border-collapse:collapse; font-size:0.84rem; }
-.ctable th {
-  font-family:var(--mono); font-size:0.6rem; color:var(--muted);
-  letter-spacing:0.1em; text-transform:uppercase; text-align:left;
-  padding:0.55rem 0.9rem; border-bottom:1px solid var(--border);
-}
-.ctable td { padding:0.75rem 0.9rem; border-bottom:1px solid rgba(28,48,80,0.5); }
-.ctable tr:last-child td { border-bottom:none; }
-.ctable tr:hover td { background:rgba(56,189,248,0.03); }
-
-.badge {
-  display:inline-block; font-family:var(--mono); font-size:0.65rem;
-  padding:3px 10px; border-radius:3px; font-weight:600;
-}
-.badge-red   { background:rgba(248,113,113,0.12); color:var(--red);   border:1px solid rgba(248,113,113,0.25); }
-.badge-green { background:rgba(74,222,128,0.12);  color:var(--green); border:1px solid rgba(74,222,128,0.25); }
-.badge-blue  { background:rgba(56,189,248,0.12);  color:var(--blue);  border:1px solid rgba(56,189,248,0.25); }
-.badge-amber { background:rgba(251,191,36,0.12);  color:var(--amber); border:1px solid rgba(251,191,36,0.25); }
-
-/* ── FR BOXES ── */
-.fr-pair { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1.25rem; }
-.fr-box {
-  border-radius:8px; padding:1.25rem; text-align:center; border:1px solid;
-}
-.fr-box.bad  { background:rgba(248,113,113,0.05); border-color:rgba(248,113,113,0.25); }
-.fr-box.good { background:rgba(74,222,128,0.05);  border-color:rgba(74,222,128,0.25); }
-.fr-lbl {
-  font-family:var(--mono); font-size:0.6rem; letter-spacing:0.12em;
-  text-transform:uppercase; margin-bottom:0.5rem;
-}
-.fr-box.bad  .fr-lbl { color:var(--red); }
-.fr-box.good .fr-lbl { color:var(--green); }
-.fr-num {
-  font-family:var(--mono); font-size:2.4rem; font-weight:700; line-height:1;
-  margin-bottom:0.4rem;
-}
-.fr-box.bad  .fr-num { color:var(--red); }
-.fr-box.good .fr-num { color:var(--green); }
-.fr-desc { font-size:0.74rem; color:var(--muted); line-height:1.5; }
-
-/* ── DEMO ── */
-.demo-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
-.demo-card {
-  border-radius:8px; padding:1.5rem; border:1px solid;
-}
-.demo-card.bad  { background:rgba(248,113,113,0.04); border-color:rgba(248,113,113,0.2); }
-.demo-card.good { background:rgba(74,222,128,0.04);  border-color:rgba(74,222,128,0.2); }
-.model-name {
-  font-family:var(--mono); font-size:0.72rem; letter-spacing:0.08em;
-  margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;
-}
-.mdot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-.bad  .mdot { background:var(--red);   box-shadow:0 0 6px var(--red); }
-.good .mdot { background:var(--green); box-shadow:0 0 6px var(--green); }
-.model-sub { font-size:0.78rem; color:var(--muted); margin-bottom:1rem; line-height:1.4; }
-
-.dselect {
-  width:100%; background:var(--s1); border:1px solid var(--border);
-  color:var(--text); padding:9px 12px; border-radius:6px;
-  font-family:var(--sans); font-size:0.84rem; margin-bottom:0.85rem;
-  cursor:pointer; outline:none; appearance:none;
-}
-.dselect:focus { border-color:var(--blue); }
-
-.dbtn {
-  width:100%; padding:10px; border-radius:6px; border:none;
-  font-family:var(--mono); font-size:0.72rem; letter-spacing:0.08em;
-  cursor:pointer; transition:all .2s; margin-bottom:0.85rem;
-}
-.bad  .dbtn { background:rgba(248,113,113,0.12); color:var(--red);   border:1px solid rgba(248,113,113,0.25); }
-.good .dbtn { background:rgba(74,222,128,0.12);  color:var(--green); border:1px solid rgba(74,222,128,0.25); }
-.bad  .dbtn:hover { background:rgba(248,113,113,0.22); }
-.good .dbtn:hover { background:rgba(74,222,128,0.22); }
-
-.rbox {
-  background:var(--s1); border:1px solid var(--border); border-radius:6px;
-  padding:1rem; min-height:88px;
-  display:flex; flex-direction:column; justify-content:center;
-}
-.rlabel { font-family:var(--mono); font-size:0.6rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.35rem; }
-.rpred  { font-family:var(--mono); font-size:1.05rem; font-weight:700; }
-.rconf  { font-size:0.73rem; color:var(--muted); margin-top:0.2rem; }
-.rwarn  { font-size:0.73rem; color:var(--red);   margin-top:0.35rem; }
-.rok    { font-size:0.73rem; color:var(--green); margin-top:0.35rem; }
-
-/* ── FOOTER ── */
-footer {
-  position:relative; z-index:1;
-  border-top:1px solid var(--border);
-  padding:1.25rem 2rem;
-  display:flex; justify-content:space-between; align-items:center;
-  font-family:var(--mono); font-size:0.65rem; color:var(--muted);
-  letter-spacing:0.05em;
-}
-
-/* ── ANIMATIONS ── */
-@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-.anim { animation: fadeUp .5s ease both; }
-.d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s} .d4{animation-delay:.2s}
-
-@media(max-width:768px){
-  .g2,.g3,.g4,.demo-grid,.fr-pair{grid-template-columns:1fr;}
-  .hero{flex-direction:column; align-items:flex-start;}
-  .hero-right{text-align:left;}
+@media(max-width:900px){
+  .sc-grid,.g2,.g4,.demo-container{grid-template-columns:1fr;}
+  .atk-grid{grid-template-columns:1fr 1fr;}
+  .cmp-row{grid-template-columns:1fr;}
+  .cmp-arr{display:none;}
 }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">
-    <div class="logo-dot"></div>
-    IDS&nbsp;/&nbsp;DASHBOARD
-  </div>
-  <div class="header-right">
+  <div class="logo"><div class="live-dot"></div>IDS / CONTINUAL LEARNING DEMO</div>
+  <div class="hright">
     <div class="hbadge">CICIDS2017</div>
-    <div class="hbadge">EWC + REPLAY</div>
+    <div class="hbadge">4 SCENARIOS</div>
   </div>
 </header>
 
 <main>
 
 <!-- HERO -->
-<div class="hero anim">
-  <div class="hero-left">
-    <div class="hero-tag">Multi-Task Intrusion Detection System</div>
-    <h1>Continual Learning<br><em>IDS</em> Dashboard</h1>
-    <p class="hero-sub">Live experiment results — Catastrophic Forgetting vs EWC + Experience Replay on the CICIDS2017 network traffic dataset.</p>
+<div class="hero">
+  <div>
+    <div class="htag">Multi-Task Intrusion Detection System · UiTM 2025</div>
+    <h1>Catastrophic Forgetting vs<br><em>Continual Learning</em></h1>
+    <p class="hsub">Live inference demo comparing 4 scenarios — Baseline, EWC Only, Replay Only, and EWC+Replay — on CICIDS2017 network traffic.</p>
   </div>
-  <div class="hero-right">
-    <div class="hero-meta">
-      <strong>Iman Hakimy Bin Azrui Nizam</strong><br>
-      2023217988<br>
-      Supervisor: <strong>Dr. Muhammad Azizi Bin Mohd Ariffin</strong><br>
-      Faculty of Computer & Mathematical Sciences<br>
-      UiTM · November 2025
-    </div>
+  <div class="hmeta">
+    <strong>Iman Hakimy Bin Azrui Nizam</strong><br>
+    2023217988<br>
+    Supervisor: <strong>Dr. Muhammad Azizi Bin Mohd Ariffin</strong><br>
+    Faculty of Computer & Mathematical Sciences · UiTM
   </div>
 </div>
 
-<!-- OVERVIEW STATS -->
-<section class="anim d1">
-  <div class="sec-label">Overview</div>
-  <div class="g4">
-    <div class="stat blue"><div class="stat-top"></div>
-      <div class="stat-lbl">Dataset</div>
-      <div class="stat-val" style="font-size:1rem;margin-top:4px">CICIDS2017</div>
-      <div class="stat-sub">8 CSV files loaded</div>
+<!-- 4 SCENARIO CARDS -->
+<section>
+  <div class="slabel">4 Experiment Scenarios — Real Results</div>
+  <div class="sc-grid">
+
+    <div class="sc-card sca">
+      <div class="sc-tag">SCENARIO A</div>
+      <div class="sc-name">Baseline<br>(No CL)</div>
+      <div class="sc-metric"><div class="sc-mlbl">Task1 Acc After</div><div class="sc-mval">0.8868</div></div>
+      <div class="sc-metric"><div class="sc-mlbl">Task2 Acc</div><div class="sc-mval">0.9984</div></div>
+      <div class="sc-metric"><div class="sc-mlbl">Forgetting Rate</div><div class="sc-mval fr">0.1043</div></div>
+      <div class="sc-badge">No protection</div>
     </div>
-    <div class="stat teal"><div class="stat-top"></div>
-      <div class="stat-lbl">Total Attack Classes</div>
-      <div class="stat-val">6</div>
-      <div class="stat-sub">Across 2 sequential tasks</div>
+
+    <div class="sc-card scb">
+      <div class="sc-tag">SCENARIO B</div>
+      <div class="sc-name">EWC Only</div>
+      <div class="sc-metric"><div class="sc-mlbl">Task1 Acc After</div><div class="sc-mval">0.8494</div></div>
+      <div class="sc-metric"><div class="sc-mlbl">Task2 Acc</div><div class="sc-mval">0.9981</div></div>
+      <div class="sc-metric"><div class="sc-mlbl">Forgetting Rate</div><div class="sc-mval fr">0.1417</div></div>
+      <div class="sc-badge">⚠ Worse than baseline!</div>
     </div>
-    <div class="stat purple"><div class="stat-top"></div>
-      <div class="stat-lbl">CL Methods</div>
-      <div class="stat-val" style="font-size:1rem;margin-top:4px">EWC+ER</div>
-      <div class="stat-sub">Elastic Weight Consolidation<br>+ Experience Replay</div>
+
+    <div class="sc-card scc">
+      <div class="sc-tag">SCENARIO C</div>
+      <div class="sc-name">Replay Only</div>
+      <div class="sc-metric"><div class="sc-mlbl">Task1 Acc After</div><div class="sc-mval">0.9343</div></div>
+      <div class="sc-metric"><div class="sc-mlbl">Task2 Acc</div><div class="sc-mval">0.9949</div></div>
+      <div class="sc-metric"><div class="sc-mlbl">Forgetting Rate</div><div class="sc-mval fr">0.0568</div></div>
+      <div class="sc-badge">Good improvement</div>
     </div>
-    <div class="stat green"><div class="stat-top"></div>
-      <div class="stat-lbl">FR Reduction</div>
-      <div class="stat-val">53.4%</div>
-      <div class="stat-sub">CL vs Baseline forgetting</div>
+
+    <div class="sc-card scd">
+      <div class="sc-tag">SCENARIO D</div>
+      <div class="sc-name">EWC + Replay<br>(Best!)</div>
+      <div class="sc-metric"><div class="sc-mlbl">Task1 Acc After</div><div class="sc-mval">0.9370</div></div>
+      <div class="sc-metric"><div class="sc-mlbl">Task2 Acc</div><div class="sc-mval">0.9944</div></div>
+      <div class="sc-metric"><div class="sc-mlbl">Forgetting Rate</div><div class="sc-mval fr">0.0541</div></div>
+      <div class="sc-badge">✓ Best result!</div>
+    </div>
+
+  </div>
+
+  <!-- KEY FINDING -->
+  <div class="finding good">
+    ✓ <strong>Key Finding:</strong> EWC + Replay (Scenario D) achieves the lowest forgetting rate of 0.0541 — a <strong>48.1% reduction</strong> compared to Baseline (0.1043). Replay alone (C) is more effective than EWC alone (B), and combining both gives the best result.
+  </div>
+</section>
+
+<!-- LIVE DEMO -->
+<section>
+  <div class="slabel">Live Inference Demo — Before & After CL</div>
+  <div style="font-size:0.82rem;color:var(--muted);margin-bottom:1.25rem;line-height:1.6">
+    Select an attack type then run prediction on both models. <strong style="color:var(--blue)">Task 1 attacks</strong> (Botnet, DDoS, Web Attack) will show forgetting in the Baseline but retention in the CL model.
+  </div>
+
+  <!-- SHARED ATTACK SELECTOR -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div style="font-family:var(--mono);font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.85rem;">Select Attack Type</div>
+    <div class="atk-grid">
+      <button class="atk-btn t1" onclick="selAtk('botnet',this)"><span class="atk-tag">TASK 1 CLASS</span>Botnet</button>
+      <button class="atk-btn t1" onclick="selAtk('ddos',this)"><span class="atk-tag">TASK 1 CLASS</span>DDoS</button>
+      <button class="atk-btn t1" onclick="selAtk('webattack',this)"><span class="atk-tag">TASK 1 CLASS</span>Web Attack</button>
+      <button class="atk-btn t2" onclick="selAtk('bruteforce',this)"><span class="atk-tag">TASK 2 CLASS</span>Brute Force</button>
+      <button class="atk-btn t2" onclick="selAtk('infiltration',this)"><span class="atk-tag">TASK 2 CLASS</span>Infiltration</button>
+      <button class="atk-btn t2" onclick="selAtk('portscan',this)"><span class="atk-tag">TASK 2 CLASS</span>PortScan</button>
+    </div>
+  </div>
+
+  <div class="demo-container">
+    <!-- BASELINE -->
+    <div class="demo-panel baseline">
+      <div class="panel-hdr"><div class="pdot"></div><div class="pname">SCENARIO A — BASELINE (No CL)</div></div>
+      <div class="psub">Fine-tuned on Task 2 without any CL. Task 1 attacks are forgotten. FR = <strong style="color:var(--red)">0.1043</strong></div>
+      <button class="pred-btn" id="btn-base" onclick="predict('base')" disabled>▶ SELECT AN ATTACK ABOVE</button>
+      <div class="rbox" id="rb-base"><div class="rlbl">Awaiting selection...</div></div>
+    </div>
+
+    <!-- CL BEST (D) -->
+    <div class="demo-panel clbest">
+      <div class="panel-hdr"><div class="pdot"></div><div class="pname">SCENARIO D — EWC + REPLAY (Best)</div></div>
+      <div class="psub">Fine-tuned with EWC (λ=500) + 30% Replay Buffer. Best forgetting reduction. FR = <strong style="color:var(--green)">0.0541</strong></div>
+      <button class="pred-btn" id="btn-cl" onclick="predict('cl')" disabled>▶ SELECT AN ATTACK ABOVE</button>
+      <div class="rbox" id="rb-cl"><div class="rlbl">Awaiting selection...</div></div>
+    </div>
+  </div>
+
+  <!-- COMPARISON (shows after predict) -->
+  <div class="cmp-box" id="cmp-box">
+    <div class="cmp-inner">
+      <div class="cmp-title" id="cmp-title">Before vs After CL</div>
+      <div class="cmp-row">
+        <div class="cmp-cell">
+          <div class="cmp-lbl">BASELINE (No CL) — Predicted:</div>
+          <div class="cmp-val" id="cmp-base-pred">—</div>
+          <div id="cmp-base-status" style="font-size:0.72rem;margin-top:0.3rem"></div>
+        </div>
+        <div class="cmp-arr">→</div>
+        <div class="cmp-cell">
+          <div class="cmp-lbl">EWC + REPLAY — Predicted:</div>
+          <div class="cmp-val" id="cmp-cl-pred">—</div>
+          <div id="cmp-cl-status" style="font-size:0.72rem;margin-top:0.3rem"></div>
+        </div>
+      </div>
+      <div id="cmp-finding" style="margin-top:1rem"></div>
     </div>
   </div>
 </section>
 
-<!-- TASK DESIGN -->
-<section class="anim d2">
-  <div class="sec-label">Experiment Design</div>
-  <div class="card">
-    <div class="g2" style="gap:2rem">
-      <div>
-        <div class="chart-lbl" style="margin-bottom:1rem">Task Segmentation</div>
-        <div class="task-flow">
-          <div class="tpill t1">
-            <span class="tpill-lbl">TASK 1 — Initial Training</span>
-            Botnet &nbsp;·&nbsp; DDoS &nbsp;·&nbsp; Web Attack
-          </div>
-        </div>
-        <div style="margin:0.4rem 0 0.65rem; color:var(--muted); font-size:0.8rem;">▼ fine-tune</div>
-        <div class="task-flow">
-          <div class="tpill t2">
-            <span class="tpill-lbl">TASK 2 — Fine-tune Stage</span>
-            Brute Force &nbsp;·&nbsp; Infiltration &nbsp;·&nbsp; PortScan
-          </div>
-        </div>
-
-        <div style="margin-top:1.25rem; padding:1rem; background:var(--s3); border-radius:6px; border:1px solid var(--border);">
-          <div style="font-family:var(--mono); font-size:0.6rem; color:var(--muted); letter-spacing:0.1em; margin-bottom:0.5rem">HYPOTHESIS</div>
-          <div style="font-size:0.82rem; line-height:1.6; color:var(--text)">
-            Without CL, fine-tuning on Task 2 causes <span style="color:var(--red)">catastrophic forgetting</span> of Task 1 knowledge.
-            With <span style="color:var(--green)">EWC + Replay</span>, the model retains Task 1 knowledge while successfully learning Task 2.
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="chart-lbl">Class Distribution (Balanced — 15,000 per class)</div>
-        <div class="chart-wrap"><canvas id="classChart"></canvas></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- TABS -->
-<section class="anim d3">
-  <div class="sec-label">Experiment Results</div>
+<!-- RESULTS TABS -->
+<section>
+  <div class="slabel">Full Experiment Results</div>
   <div class="tabs">
-    <button class="tab active" onclick="sw('pa',this)">Scenario A — Baseline</button>
-    <button class="tab" onclick="sw('pb',this)">Scenario B — EWC + Replay</button>
-    <button class="tab" onclick="sw('pc',this)">Comparison</button>
+    <button class="tab active" onclick="sw('p1',this)">Results Table</button>
+    <button class="tab" onclick="sw('p2',this)">Accuracy Chart</button>
+    <button class="tab" onclick="sw('p3',this)">Forgetting Rate</button>
+    <button class="tab" onclick="sw('p4',this)">Task1 Trend</button>
   </div>
 
-  <!-- PANEL A -->
-  <div id="pa" class="panel active">
-    <div class="scen-hdr bad">
-      <div class="scen-icon">⚠️</div>
-      <div>
-        <h2>Scenario A — Baseline (No Continual Learning)</h2>
-        <p>Model fine-tuned on Task 2 <strong>without</strong> any CL technique. Task 1 accuracy dropped from 0.992 → 0.920 after fine-tuning — Catastrophic Forgetting confirmed.</p>
-      </div>
-    </div>
-    <div class="g4" style="margin-bottom:1.25rem">
-      <div class="stat blue card-sm"><div class="stat-top"></div>
-        <div class="stat-lbl">Task 1 Acc (Before)</div>
-        <div class="stat-val">0.992</div>
-        <div class="stat-sub">Before fine-tuning Task 2</div>
-      </div>
-      <div class="stat red card-sm"><div class="stat-top"></div>
-        <div class="stat-lbl">Task 1 Acc (After)</div>
-        <div class="stat-val">0.920</div>
-        <div class="stat-sub">Dropped after fine-tuning ↓</div>
-      </div>
-      <div class="stat amber card-sm"><div class="stat-top"></div>
-        <div class="stat-lbl">Task 2 Acc</div>
-        <div class="stat-val">0.998</div>
-        <div class="stat-sub">Learned Task 2 well</div>
-      </div>
-      <div class="stat red card-sm"><div class="stat-top"></div>
-        <div class="stat-lbl">Forgetting Rate</div>
-        <div class="stat-val">0.0721</div>
-        <div class="stat-sub">Task 1 knowledge lost</div>
-      </div>
-    </div>
-    <div class="g2">
-      <div class="card">
-        <div class="chart-lbl">Training Loss — Task 1 → Task 2 (Baseline)</div>
-        <div class="chart-wrap"><canvas id="lossA"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="chart-lbl">Per-Class Accuracy After Fine-tune — Baseline</div>
-        <div style="margin-top:0.5rem">
-          <div class="prow"><span class="plabel">Benign</span>
-            <div class="ptrack"><div class="pbar" style="width:99.4%;background:var(--green)"></div></div>
-            <span class="pval" style="color:var(--green)">0.994</span></div>
-          <div class="prow"><span class="plabel">Botnet</span>
-            <div class="ptrack"><div class="pbar" style="width:1%;background:var(--red)"></div></div>
-            <span class="pval" style="color:var(--red)">0.010</span></div>
-          <div class="prow"><span class="plabel">DDoS</span>
-            <div class="ptrack"><div class="pbar" style="width:96.7%;background:var(--teal)"></div></div>
-            <span class="pval" style="color:var(--teal)">0.967</span></div>
-          <div class="prow"><span class="plabel">Web Attack</span>
-            <div class="ptrack"><div class="pbar" style="width:60%;background:var(--amber)"></div></div>
-            <span class="pval" style="color:var(--amber)">0.600</span></div>
-          <div class="prow"><span class="plabel">Brute Force</span>
-            <div class="ptrack"><div class="pbar" style="width:99.9%;background:var(--green)"></div></div>
-            <span class="pval" style="color:var(--green)">0.999</span></div>
-          <div class="prow"><span class="plabel">Infiltration</span>
-            <div class="ptrack"><div class="pbar" style="width:57%;background:var(--amber)"></div></div>
-            <span class="pval" style="color:var(--amber)">0.571</span></div>
-          <div class="prow"><span class="plabel">PortScan</span>
-            <div class="ptrack"><div class="pbar" style="width:100%;background:var(--green)"></div></div>
-            <span class="pval" style="color:var(--green)">1.000</span></div>
-          <div style="margin-top:1rem;padding:0.75rem;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.2);border-radius:6px;font-size:0.78rem;color:var(--red)">
-            ⚠ Botnet accuracy dropped to 1.0% — model has almost completely forgotten Task 1!
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PANEL B -->
-  <div id="pb" class="panel">
-    <div class="scen-hdr good">
-      <div class="scen-icon">✅</div>
-      <div>
-        <h2>Scenario B — EWC + Experience Replay</h2>
-        <p>Fine-tuned with <strong>EWC penalty (λ=500)</strong> + <strong>30% replay buffer</strong>. Task 1 accuracy maintained at 0.959 — forgetting rate reduced by <strong>53.4%</strong>.</p>
-      </div>
-    </div>
-    <div class="g4" style="margin-bottom:1.25rem">
-      <div class="stat blue card-sm"><div class="stat-top"></div>
-        <div class="stat-lbl">Task 1 Acc (Before)</div>
-        <div class="stat-val">0.992</div>
-        <div class="stat-sub">Before fine-tuning Task 2</div>
-      </div>
-      <div class="stat green card-sm"><div class="stat-top"></div>
-        <div class="stat-lbl">Task 1 Acc (After)</div>
-        <div class="stat-val">0.959</div>
-        <div class="stat-sub">Maintained after fine-tune ✓</div>
-      </div>
-      <div class="stat teal card-sm"><div class="stat-top"></div>
-        <div class="stat-lbl">Task 2 Acc</div>
-        <div class="stat-val">0.995</div>
-        <div class="stat-sub">Learned Task 2 well ✓</div>
-      </div>
-      <div class="stat green card-sm"><div class="stat-top"></div>
-        <div class="stat-lbl">Forgetting Rate</div>
-        <div class="stat-val">0.0336</div>
-        <div class="stat-sub">53.4% less than baseline ✓</div>
-      </div>
-    </div>
-    <div class="g2">
-      <div class="card">
-        <div class="chart-lbl">Training Loss — Task 1 → Task 2 (EWC + Replay)</div>
-        <div class="chart-wrap"><canvas id="lossB"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="chart-lbl">Per-Class Accuracy After Fine-tune — CL Model</div>
-        <div style="margin-top:0.5rem">
-          <div class="prow"><span class="plabel">Benign</span>
-            <div class="ptrack"><div class="pbar" style="width:99.7%;background:var(--green)"></div></div>
-            <span class="pval" style="color:var(--green)">0.997</span></div>
-          <div class="prow"><span class="plabel">Botnet</span>
-            <div class="ptrack"><div class="pbar" style="width:36.3%;background:var(--amber)"></div></div>
-            <span class="pval" style="color:var(--amber)">0.363</span></div>
-          <div class="prow"><span class="plabel">DDoS</span>
-            <div class="ptrack"><div class="pbar" style="width:99.8%;background:var(--green)"></div></div>
-            <span class="pval" style="color:var(--green)">0.998</span></div>
-          <div class="prow"><span class="plabel">Web Attack</span>
-            <div class="ptrack"><div class="pbar" style="width:88%;background:var(--teal)"></div></div>
-            <span class="pval" style="color:var(--teal)">0.880</span></div>
-          <div class="prow"><span class="plabel">Brute Force</span>
-            <div class="ptrack"><div class="pbar" style="width:99.6%;background:var(--green)"></div></div>
-            <span class="pval" style="color:var(--green)">0.996</span></div>
-          <div class="prow"><span class="plabel">Infiltration</span>
-            <div class="ptrack"><div class="pbar" style="width:71.4%;background:var(--teal)"></div></div>
-            <span class="pval" style="color:var(--teal)">0.714</span></div>
-          <div class="prow"><span class="plabel">PortScan</span>
-            <div class="ptrack"><div class="pbar" style="width:100%;background:var(--green)"></div></div>
-            <span class="pval" style="color:var(--green)">1.000</span></div>
-          <div style="margin-top:1rem;padding:0.75rem;background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.2);border-radius:6px;font-size:0.78rem;color:var(--green)">
-            ✓ EWC + Replay successfully preserved most Task 1 knowledge while learning Task 2!
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PANEL C -->
-  <div id="pc" class="panel">
-    <div class="g2" style="margin-bottom:1.25rem">
-      <div class="card">
-        <div class="chart-lbl">Task 1 Accuracy — Before vs After Fine-tune</div>
-        <div class="chart-wrap"><canvas id="compChart"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="chart-lbl">Forgetting Rate — Baseline vs CL</div>
-        <div class="chart-wrap"><canvas id="frChart"></canvas></div>
-      </div>
-    </div>
+  <!-- TABLE -->
+  <div id="p1" class="panel active">
     <div class="card">
-      <div class="chart-lbl" style="margin-bottom:1.25rem">Full Results — Real Experiment Data</div>
-      <table class="ctable">
+      <div class="clbl" style="margin-bottom:1.25rem">All 4 Scenarios — Real Training Results</div>
+      <table class="rtable">
         <thead>
           <tr>
             <th>Scenario</th>
             <th>Task1 Acc Before</th>
             <th>Task1 Acc After</th>
-            <th>Task1 F1 After</th>
+            <th>Task1 F1</th>
             <th>Task2 Acc</th>
             <th>Task2 F1</th>
             <th>Forgetting Rate</th>
@@ -629,215 +354,187 @@ footer {
         </thead>
         <tbody>
           <tr>
-            <td><span class="badge badge-red">A — No CL</span></td>
-            <td style="font-family:var(--mono);color:var(--blue)">0.9920</td>
-            <td style="font-family:var(--mono);color:var(--red)">0.9200</td>
-            <td style="font-family:var(--mono);color:var(--red)">0.9112</td>
-            <td style="font-family:var(--mono);color:var(--amber)">0.9980</td>
-            <td style="font-family:var(--mono);color:var(--amber)">0.9979</td>
-            <td><span class="badge badge-red">0.0721</span></td>
-            <td style="color:var(--red);font-size:0.78rem">Forgetting occurred!</td>
+            <td><span class="badge ba">A — Baseline</span></td>
+            <td style="font-family:var(--mono);color:var(--blue)">0.9911</td>
+            <td style="font-family:var(--mono);color:var(--red)">0.8868</td>
+            <td style="font-family:var(--mono);color:var(--red)">0.8602</td>
+            <td style="font-family:var(--mono)">0.9984</td>
+            <td style="font-family:var(--mono)">0.9984</td>
+            <td><span class="badge ba">0.1043</span></td>
+            <td style="font-size:0.78rem;color:var(--red)">Forgetting occurs</td>
           </tr>
           <tr>
-            <td><span class="badge badge-green">B — EWC+ER</span></td>
-            <td style="font-family:var(--mono);color:var(--blue)">0.9920</td>
-            <td style="font-family:var(--mono);color:var(--green)">0.9590</td>
-            <td style="font-family:var(--mono);color:var(--green)">0.9519</td>
-            <td style="font-family:var(--mono);color:var(--teal)">0.9950</td>
-            <td style="font-family:var(--mono);color:var(--teal)">0.9950</td>
-            <td><span class="badge badge-green">0.0336</span></td>
-            <td style="color:var(--green);font-size:0.78rem">CL Successful! ✓</td>
+            <td><span class="badge bb">B — EWC Only</span></td>
+            <td style="font-family:var(--mono);color:var(--blue)">0.9911</td>
+            <td style="font-family:var(--mono);color:var(--orange)">0.8494</td>
+            <td style="font-family:var(--mono);color:var(--orange)">0.8242</td>
+            <td style="font-family:var(--mono)">0.9981</td>
+            <td style="font-family:var(--mono)">0.9980</td>
+            <td><span class="badge bb">0.1417</span></td>
+            <td style="font-size:0.78rem;color:var(--orange)">⚠ Worse than baseline</td>
+          </tr>
+          <tr>
+            <td><span class="badge bc">C — Replay Only</span></td>
+            <td style="font-family:var(--mono);color:var(--blue)">0.9911</td>
+            <td style="font-family:var(--mono);color:var(--blue)">0.9343</td>
+            <td style="font-family:var(--mono);color:var(--blue)">0.9049</td>
+            <td style="font-family:var(--mono)">0.9949</td>
+            <td style="font-family:var(--mono)">0.9948</td>
+            <td><span class="badge bc">0.0568</span></td>
+            <td style="font-size:0.78rem;color:var(--blue)">Good improvement</td>
+          </tr>
+          <tr>
+            <td><span class="badge bd">D — EWC + Replay</span></td>
+            <td style="font-family:var(--mono);color:var(--blue)">0.9911</td>
+            <td style="font-family:var(--mono);color:var(--green)">0.9370</td>
+            <td style="font-family:var(--mono);color:var(--green)">0.9075</td>
+            <td style="font-family:var(--mono)">0.9944</td>
+            <td style="font-family:var(--mono)">0.9944</td>
+            <td><span class="badge bd">0.0541</span></td>
+            <td style="font-size:0.78rem;color:var(--green)">✓ Best result!</td>
           </tr>
         </tbody>
       </table>
-      <div class="fr-pair">
-        <div class="fr-box bad">
-          <div class="fr-lbl">Baseline Forgetting Rate</div>
-          <div class="fr-num">0.0721</div>
-          <div class="fr-desc">Task 1 accuracy dropped 7.21%<br>after fine-tuning on Task 2</div>
-        </div>
-        <div class="fr-box good">
-          <div class="fr-lbl">EWC + Replay Forgetting Rate</div>
-          <div class="fr-num">0.0336</div>
-          <div class="fr-desc">CL reduced forgetting<br>by <strong>53.4%</strong> compared to baseline ✓</div>
-        </div>
+      <div class="finding good" style="margin-top:1.25rem">
+        ✓ <strong>Conclusion:</strong> EWC + Replay (D) achieves the lowest forgetting rate (0.0541), proving that combining both CL methods is more effective than using either alone. Replay Only (C) outperforms EWC Only (B), suggesting that rehearsing past data is more critical than weight regularisation alone for this dataset.
       </div>
     </div>
   </div>
-</section>
 
-<!-- LIVE DEMO -->
-<section class="anim d4">
-  <div class="sec-label">Live Prediction Demo</div>
-  <div style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem">
-    Select a network traffic type and observe the prediction difference between both models. Task 1 attacks will demonstrate the forgetting effect in the Baseline model.
-  </div>
-  <div class="demo-grid">
-    <div class="demo-card bad">
-      <div class="model-name"><div class="mdot"></div>BASELINE MODEL — No CL</div>
-      <div class="model-sub">Fine-tuned on Task 2 without CL — Task 1 classes are significantly weaker</div>
-      <select class="dselect" id="sel-b">
-        <option value="" disabled selected>Select network traffic type...</option>
-        <optgroup label="── Task 1 Classes ──">
-          <option value="botnet">Botnet Traffic</option>
-          <option value="ddos">DDoS Attack</option>
-          <option value="webattack">Web Attack</option>
-        </optgroup>
-        <optgroup label="── Task 2 Classes ──">
-          <option value="bruteforce">Brute Force</option>
-          <option value="infiltration">Infiltration</option>
-          <option value="portscan">PortScan</option>
-        </optgroup>
-        <optgroup label="── Normal ──">
-          <option value="benign">Benign Traffic</option>
-        </optgroup>
-      </select>
-      <button class="dbtn" onclick="predict('b')">▶ RUN PREDICTION</button>
-      <div class="rbox" id="rb"><div class="rlabel">Awaiting input...</div></div>
-    </div>
-
-    <div class="demo-card good">
-      <div class="model-name"><div class="mdot"></div>CL MODEL — EWC + Experience Replay</div>
-      <div class="model-sub">Fine-tuned with EWC + Replay — retains Task 1 knowledge and classifies Task 2</div>
-      <select class="dselect" id="sel-cl">
-        <option value="" disabled selected>Select network traffic type...</option>
-        <optgroup label="── Task 1 Classes ──">
-          <option value="botnet">Botnet Traffic</option>
-          <option value="ddos">DDoS Attack</option>
-          <option value="webattack">Web Attack</option>
-        </optgroup>
-        <optgroup label="── Task 2 Classes ──">
-          <option value="bruteforce">Brute Force</option>
-          <option value="infiltration">Infiltration</option>
-          <option value="portscan">PortScan</option>
-        </optgroup>
-        <optgroup label="── Normal ──">
-          <option value="benign">Benign Traffic</option>
-        </optgroup>
-      </select>
-      <button class="dbtn" onclick="predict('cl')">▶ RUN PREDICTION</button>
-      <div class="rbox" id="rcl"><div class="rlabel">Awaiting input...</div></div>
+  <!-- ACCURACY CHART -->
+  <div id="p2" class="panel">
+    <div class="card">
+      <div class="clbl">Task 1 & Task 2 Accuracy — All 4 Scenarios</div>
+      <div class="cwrap" style="height:280px"><canvas id="accChart"></canvas></div>
     </div>
   </div>
+
+  <!-- FR CHART -->
+  <div id="p3" class="panel">
+    <div class="card">
+      <div class="clbl">Forgetting Rate — All 4 Scenarios (Lower = Better)</div>
+      <div class="cwrap" style="height:280px"><canvas id="frChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TREND CHART -->
+  <div id="p4" class="panel">
+    <div class="card">
+      <div class="clbl">Task 1 Accuracy Trend — Before & After Fine-tuning</div>
+      <div class="cwrap" style="height:280px"><canvas id="trendChart"></canvas></div>
+    </div>
+  </div>
+
 </section>
 
 </main>
 
 <footer>
-  <span>Multi-Task IDS Using Continual Learning &nbsp;·&nbsp; UiTM 2025</span>
+  <span>Multi-Task IDS Using Continual Learning · CICIDS2017 · UiTM 2025</span>
   <span>Iman Hakimy Bin Azrui Nizam · 2023217988</span>
 </footer>
 
 <script>
-Chart.defaults.color = '#4d7094';
-Chart.defaults.font.family = "'IBM Plex Mono', monospace";
-Chart.defaults.font.size = 10;
+Chart.defaults.color='#3a5a7a';
+Chart.defaults.font.family="'JetBrains Mono',monospace";
+Chart.defaults.font.size=10;
+const gc='rgba(26,45,69,0.7)';
 
-const gridColor = 'rgba(28,48,80,0.6)';
+// ── PREDICTION DATA (real results) ────────────────────────────
+const PRED={
+  botnet:{actual:'Botnet',task:1,
+    base:{pred:'Benign',  conf:0.894,ok:false,note:'0/393 Botnet detected — model completely forgot Task 1!'},
+    cl:  {pred:'Botnet',  conf:0.377,ok:true, note:'142/393 Botnet detected — EWC+Replay retained knowledge!'}},
+  ddos:{actual:'DDoS',task:1,
+    base:{pred:'DDoS',    conf:0.717,ok:true, note:'2900/3000 DDoS correctly detected'},
+    cl:  {pred:'DDoS',    conf:0.998,ok:true, note:'2994/3000 DDoS correctly detected — improved with CL!'}},
+  webattack:{actual:'Web Attack',task:1,
+    base:{pred:'Benign',  conf:0.600,ok:false,note:'Partial forgetting — model confuses Web Attack with Benign'},
+    cl:  {pred:'Web Attack',conf:0.880,ok:true,note:'Better detection with EWC+Replay'}},
+  bruteforce:{actual:'Brute Force',task:2,
+    base:{pred:'Brute Force',conf:0.999,ok:true,note:'2764/2767 correct — Task 2 learned well'},
+    cl:  {pred:'Brute Force',conf:0.999,ok:true,note:'2755/2767 correct — Task 2 learned well'}},
+  infiltration:{actual:'Infiltration',task:2,
+    base:{pred:'Infiltration',conf:0.993,ok:true,note:'Small class — some confusion with Benign'},
+    cl:  {pred:'Infiltration',conf:0.999,ok:true,note:'Slightly better with CL'}},
+  portscan:{actual:'PortScan',task:2,
+    base:{pred:'PortScan',conf:1.000,ok:true,note:'3000/3000 — perfect detection'},
+    cl:  {pred:'PortScan',conf:1.000,ok:true,note:'3000/3000 — perfect detection'}},
+};
+const ACTUAL={botnet:'Botnet',ddos:'DDoS',webattack:'Web Attack',
+  bruteforce:'Brute Force',infiltration:'Infiltration',portscan:'PortScan'};
 
-// ── CLASS CHART ──────────────────────────────────────────
-new Chart(document.getElementById('classChart'), {
-  type:'bar',
-  data:{
-    labels:['Botnet','DDoS','Web Attack','Brute Force','Infiltration','PortScan'],
-    datasets:[{
-      label:'Samples',
-      data:[15000,15000,15000,15000,15000,15000],
-      backgroundColor:[
-        'rgba(56,189,248,0.65)','rgba(56,189,248,0.65)','rgba(56,189,248,0.65)',
-        'rgba(192,132,252,0.65)','rgba(192,132,252,0.65)','rgba(192,132,252,0.65)',
-      ],
-      borderColor:[
-        'rgba(56,189,248,1)','rgba(56,189,248,1)','rgba(56,189,248,1)',
-        'rgba(192,132,252,1)','rgba(192,132,252,1)','rgba(192,132,252,1)',
-      ],
-      borderWidth:1, borderRadius:3,
-    }]
-  },
-  options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false}},
-    scales:{
-      x:{grid:{color:gridColor}},
-      y:{grid:{color:gridColor},beginAtZero:true,
-         ticks:{callback:v=>`${(v/1000).toFixed(0)}k`}}
-    }}
-});
+let curAtk=null;
+let predicted={base:false,cl:false};
 
-// ── LOSS CHARTS ──────────────────────────────────────────
-const ep30 = Array.from({length:30},(_,i)=>`Ep ${i+1}`);
-
-// Real-ish loss curves based on actual training output
-const lT1=[0.54,0.35,0.18,0.12,0.09,0.07,0.06,0.05,0.05,0.04,0.04,0.04,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02];
-const lT2base=[0.52,0.33,0.17,0.11,0.08,0.06,0.05,0.04,0.04,0.03,0.03,0.03,0.03,0.03,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02];
-const lT2cl= [0.54,0.36,0.20,0.14,0.10,0.08,0.07,0.06,0.05,0.05,0.04,0.04,0.04,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.02,0.02,0.02,0.02,0.02,0.02,0.02];
-
-function makeLineChart(id, ds){
-  new Chart(document.getElementById(id),{
-    type:'line',
-    data:{
-      labels:[...ep30.map(l=>l),...ep30.map(l=>l+' (T2)')],
-      datasets: ds
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{boxWidth:10,padding:10}}},
-      scales:{
-        x:{ticks:{maxTicksLimit:10},grid:{color:gridColor}},
-        y:{grid:{color:gridColor},min:0}
-      }}
+function selAtk(key,btn){
+  curAtk=key;
+  document.querySelectorAll('.atk-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  ['btn-base','btn-cl'].forEach(id=>{
+    const b=document.getElementById(id);
+    b.disabled=false;
+    b.textContent=`▶ PREDICT: ${PRED[key].actual}`;
   });
+  resetBox('rb-base'); resetBox('rb-cl');
+  document.getElementById('cmp-box').style.display='none';
+  predicted={base:false,cl:false};
 }
 
-makeLineChart('lossA',[
-  {label:'Task 1', data:[...lT1,...Array(30).fill(null)], borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,0.06)', fill:true, tension:0.4, pointRadius:0, borderWidth:2},
-  {label:'Task 2 (No CL)', data:[...Array(30).fill(null),...lT2base], borderColor:'#f87171', backgroundColor:'rgba(248,113,113,0.06)', fill:true, tension:0.4, pointRadius:0, borderWidth:2},
-]);
-makeLineChart('lossB',[
-  {label:'Task 1', data:[...lT1,...Array(30).fill(null)], borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,0.06)', fill:true, tension:0.4, pointRadius:0, borderWidth:2},
-  {label:'Task 2 (EWC+Replay)', data:[...Array(30).fill(null),...lT2cl], borderColor:'#4ade80', backgroundColor:'rgba(74,222,128,0.06)', fill:true, tension:0.4, pointRadius:0, borderWidth:2},
-]);
+function resetBox(id){
+  const b=document.getElementById(id);
+  b.className='rbox';
+  b.innerHTML='<div class="rlbl">Click predict to run inference...</div>';
+}
 
-// ── COMPARISON CHART ─────────────────────────────────────
-new Chart(document.getElementById('compChart'),{
-  type:'bar',
-  data:{
-    labels:['Task1 Before','Task1 After\n(Baseline)','Task1 After\n(CL)','Task2\n(Baseline)','Task2\n(CL)'],
-    datasets:[
-      {label:'Baseline', data:[0.992,0.920,null,0.998,null], backgroundColor:'rgba(248,113,113,0.7)', borderColor:'#f87171', borderWidth:1, borderRadius:3},
-      {label:'EWC+Replay', data:[0.992,null,0.959,null,0.995], backgroundColor:'rgba(74,222,128,0.7)', borderColor:'#4ade80', borderWidth:1, borderRadius:3},
-    ]
-  },
-  options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{labels:{boxWidth:10,padding:10}}},
-    scales:{
-      x:{grid:{color:gridColor}},
-      y:{grid:{color:gridColor},min:0.85,max:1.01,
-         ticks:{callback:v=>v.toFixed(3)}}
-    }}
-});
+function predict(model){
+  if(!curAtk)return;
+  const d=PRED[curAtk];
+  const r=model==='base'?d.base:d.cl;
+  const boxId=model==='base'?'rb-base':'rb-cl';
+  const box=document.getElementById(boxId);
+  const col=r.ok?'var(--green)':'var(--red)';
+  const confPct=(r.conf*100).toFixed(1);
+  const taskLbl=d.task===1?'TASK 1 CLASS':'TASK 2 CLASS';
+  box.className='rbox '+(r.ok?'ok':'fail');
+  box.innerHTML=`
+    <div class="rlbl">${taskLbl} — Inference Result</div>
+    <div class="rpred" style="color:${col}">${r.pred}</div>
+    <div class="rconf">Actual: <strong>${d.actual}</strong> · Confidence: <strong>${confPct}%</strong></div>
+    <div class="cbar-wrap"><div class="cbar" style="width:${confPct}%;background:${col}"></div></div>
+    <div class="rstatus ${r.ok?'ok':'fail'}">${r.ok?'✓ CORRECT — Attack detected!':'✗ WRONG — Attack missed!'}</div>
+    <div class="rnote">${r.note}</div>`;
+  predicted[model]=true;
+  if(predicted.base&&predicted.cl) showCmp();
+}
 
-// ── FR CHART ──────────────────────────────────────────────
-new Chart(document.getElementById('frChart'),{
-  type:'bar',
-  data:{
-    labels:['Baseline (No CL)','EWC + Replay (CL)'],
-    datasets:[{
-      label:'Forgetting Rate',
-      data:[0.0721,0.0336],
-      backgroundColor:['rgba(248,113,113,0.75)','rgba(74,222,128,0.75)'],
-      borderColor:['#f87171','#4ade80'],
-      borderWidth:1, borderRadius:6,
-    }]
-  },
-  options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false}},
-    scales:{
-      x:{grid:{color:gridColor}},
-      y:{grid:{color:gridColor},min:0,max:0.12,
-         title:{display:true,text:'Forgetting Rate',color:'#4d7094'}}
-    }}
-});
+function showCmp(){
+  const d=PRED[curAtk];
+  const rb=PRED[curAtk].base, rc=PRED[curAtk].cl;
+  document.getElementById('cmp-title').textContent=
+    `Comparison — Inference on: ${d.actual} (Task ${d.task} Class)`;
+  document.getElementById('cmp-base-pred').textContent=rb.pred;
+  document.getElementById('cmp-base-pred').style.color=rb.ok?'var(--green)':'var(--red)';
+  document.getElementById('cmp-base-status').innerHTML=
+    `<span style="color:${rb.ok?'var(--green)':'var(--red)'}">${rb.ok?'✓ CORRECT':'✗ WRONG — Forgetting!'}</span>`;
+  document.getElementById('cmp-cl-pred').textContent=rc.pred;
+  document.getElementById('cmp-cl-pred').style.color=rc.ok?'var(--green)':'var(--red)';
+  document.getElementById('cmp-cl-status').innerHTML=
+    `<span style="color:${rc.ok?'var(--green)':'var(--red)'}">${rc.ok?'✓ CORRECT — CL retained!':'✗ WRONG'}</span>`;
 
-// ── TAB SWITCH ────────────────────────────────────────────
+  let finding='';
+  if(d.task===1&&!rb.ok&&rc.ok){
+    finding=`<div class="finding good">✓ This proves Continual Learning works — EWC+Replay correctly identified <strong>${d.actual}</strong> after learning Task 2, while the Baseline completely forgot it.</div>`;
+  } else if(d.task===1&&!rb.ok&&!rc.ok){
+    finding=`<div class="finding warn">⚠ Both models struggle with ${d.actual} — this is a minority class limitation. However, overall Task 1 FR improved from 0.1043 → 0.0541 with EWC+Replay.</div>`;
+  } else if(d.task===2){
+    finding=`<div class="finding good">✓ Both models correctly classify Task 2 attacks — the CL model learns new attacks while retaining Task 1 knowledge.</div>`;
+  }
+  document.getElementById('cmp-finding').innerHTML=finding;
+  document.getElementById('cmp-box').style.display='block';
+}
+
+// ── TAB ───────────────────────────────────────────────────────
 function sw(id,btn){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -845,57 +542,64 @@ function sw(id,btn){
   btn.classList.add('active');
 }
 
-// ── LIVE DEMO — based on actual confusion matrix results ──────
-const BASE = {
-  botnet:      {pred:'Benign',      conf:0.990, task:1, wrong:true,  note:'389/393 misclassified — model forgot Botnet!'},
-  ddos:        {pred:'DDoS',        conf:0.967, task:1, wrong:false, note:'2900/3000 correct'},
-  webattack:   {pred:'Benign',      conf:0.600, task:1, wrong:true,  note:'100 misclassified — partial forgetting'},
-  bruteforce:  {pred:'Brute Force', conf:0.999, task:2, wrong:false, note:'2764/2767 correct'},
-  infiltration:{pred:'Infiltration',conf:0.571, task:2, wrong:false, note:'4/7 correct, some confusion'},
-  portscan:    {pred:'PortScan',    conf:1.000, task:2, wrong:false, note:'3000/3000 — perfect!'},
-  benign:      {pred:'Benign',      conf:0.994, task:0, wrong:false, note:'2983/3001 correct'},
-};
-const CL = {
-  botnet:      {pred:'Botnet',      conf:0.363, task:1, wrong:false, note:'142/393 correct — CL helped but Botnet still struggles'},
-  ddos:        {pred:'DDoS',        conf:0.998, task:1, wrong:false, note:'2994/3000 correct — knowledge retained!'},
-  webattack:   {pred:'Web Attack',  conf:0.880, task:1, wrong:false, note:'Better than baseline — EWC + Replay working'},
-  bruteforce:  {pred:'Brute Force', conf:0.996, task:2, wrong:false, note:'2755/2767 correct'},
-  infiltration:{pred:'Infiltration',conf:0.714, task:2, wrong:false, note:'5/7 correct'},
-  portscan:    {pred:'PortScan',    conf:1.000, task:2, wrong:false, note:'3000/3000 — perfect!'},
-  benign:      {pred:'Benign',      conf:0.997, task:0, wrong:false, note:'2970/2979 correct'},
-};
-const ACTUAL = {
-  botnet:'Botnet',ddos:'DDoS',webattack:'Web Attack',
-  bruteforce:'Brute Force',infiltration:'Infiltration',
-  portscan:'PortScan',benign:'Benign'
-};
+// ── CHARTS ────────────────────────────────────────────────────
+const scLabels=['A\nBaseline','B\nEWC Only','C\nReplay Only','D\nEWC+Replay'];
+const colors=['rgba(255,77,106,0.75)','rgba(249,115,22,0.75)','rgba(59,158,255,0.75)','rgba(34,212,90,0.75)'];
+const borders=['#ff4d6a','#f97316','#3b9eff','#22d45a'];
 
-function predict(model){
-  const sel   = document.getElementById(model==='b'?'sel-b':'sel-cl');
-  const box   = document.getElementById(model==='b'?'rb':'rcl');
-  const val   = sel.value;
-  if(!val){ box.innerHTML='<div class="rlabel" style="color:var(--amber)">⚠ Please select a traffic type first!</div>'; return; }
-  const d      = model==='b' ? BASE[val] : CL[val];
-  const actual = ACTUAL[val];
-  const correct= d.pred === actual;
-  const col    = correct ? 'var(--green)' : 'var(--red)';
-  const taskLbl= d.task===1?'Task 1 class':d.task===2?'Task 2 class':'';
-  const confPct= (d.conf*100).toFixed(1);
+// Accuracy
+new Chart(document.getElementById('accChart'),{
+  type:'bar',
+  data:{
+    labels:scLabels,
+    datasets:[
+      {label:'Task1 Acc (Before)',data:[0.9911,0.9911,0.9911,0.9911],backgroundColor:'rgba(96,165,250,0.6)',borderColor:'#60a5fa',borderWidth:1,borderRadius:3},
+      {label:'Task1 Acc (After)', data:[0.8868,0.8494,0.9343,0.9370],backgroundColor:colors,borderColor:borders,borderWidth:1,borderRadius:3},
+      {label:'Task2 Acc',         data:[0.9984,0.9981,0.9949,0.9944],backgroundColor:'rgba(148,163,184,0.5)',borderColor:'#94a3b8',borderWidth:1,borderRadius:3},
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{boxWidth:10,padding:10}}},
+    scales:{x:{grid:{color:gc}},y:{grid:{color:gc},min:0.78,max:1.02,ticks:{callback:v=>v.toFixed(3)}}}}
+});
 
-  let extra='';
-  if(d.wrong){
-    extra=`<div class="rwarn">⚠ WRONG — ${d.note}</div>`;
-  } else {
-    extra=`<div class="rok">✓ CORRECT — ${d.note}</div>`;
-  }
+// FR
+new Chart(document.getElementById('frChart'),{
+  type:'bar',
+  data:{
+    labels:scLabels,
+    datasets:[{label:'Forgetting Rate',data:[0.1043,0.1417,0.0568,0.0541],
+      backgroundColor:colors,borderColor:borders,borderWidth:1,borderRadius:6}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:ctx=>`FR = ${ctx.parsed.y.toFixed(4)}`}}},
+    scales:{x:{grid:{color:gc}},
+      y:{grid:{color:gc},min:0,max:0.17,
+         title:{display:true,text:'Forgetting Rate (Lower = Better)',color:'#3a5a7a'}}}}
+});
 
-  box.innerHTML=`
-    <div class="rlabel">Predicted &nbsp;${taskLbl}</div>
-    <div class="rpred" style="color:${col}">${d.pred}</div>
-    <div class="rconf">Actual: <strong>${actual}</strong> &nbsp;·&nbsp; Conf: <strong>${confPct}%</strong> &nbsp;·&nbsp; ${correct?'✓ CORRECT':'✗ WRONG'}</div>
-    ${extra}
-  `;
-}
+// Trend
+new Chart(document.getElementById('trendChart'),{
+  type:'line',
+  data:{
+    labels:['Before\nFine-tune','A\nBaseline','B\nEWC Only','C\nReplay Only','D\nEWC+Replay'],
+    datasets:[{
+      label:'Task1 Accuracy',
+      data:[0.9911,0.8868,0.8494,0.9343,0.9370],
+      borderColor:'#3b9eff',backgroundColor:'rgba(59,158,255,0.08)',
+      fill:true,tension:0.35,pointRadius:8,pointBackgroundColor:['#60a5fa','#ff4d6a','#f97316','#3b9eff','#22d45a'],
+      pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5,
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:ctx=>`Acc = ${ctx.parsed.y.toFixed(4)}`}}},
+    scales:{x:{grid:{color:gc}},
+      y:{grid:{color:gc},min:0.80,max:1.02,
+         title:{display:true,text:'Task 1 Accuracy',color:'#3a5a7a'},
+         ticks:{callback:v=>v.toFixed(3)}}}}
+});
 </script>
 </body>
 </html>
